@@ -1,0 +1,33 @@
+# --- Web framework ---
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydantic-settings
+
+# --- Ingestion ---
+markitdown[all]
+requests
+
+# --- Embeddings & vector search ---
+sentence-transformers
+torch
+qdrant-client
+rank-bm25
+
+# --- Reranking (Week 1 Day 3) ---
+onnxruntime
+transformers
+
+# --- Hallucination guard (Week 1 Day 5) ---
+spacy
+# after install, run once: python -m spacy download en_core_web_sm
+
+# --- gRPC (Week 2) ---
+grpcio
+grpcio-tools
+protobuf
+
+# --- Dev / testing ---
+pytest
+httpx
