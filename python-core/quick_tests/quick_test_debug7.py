@@ -61,7 +61,7 @@ def rerank_multi_query(
         This exists specifically to fix a failure mode where reranking a
         retry pool against only the ORIGINAL query discounted genuinely
         better candidates that a rewritten query found via BM25 but whose
-    wording didn't match the original query's vocabulary.
+        wording didn't match the original query's vocabulary.
     """
     if not candidates:
         return []

@@ -8,6 +8,7 @@ FastAPI application entrypoint. Run with:
 from fastapi import FastAPI
 
 from app.api.ingest_routes import router as ingest_router
+from app.api.query_routes import router as query_router
 from app.retrieval.dense_search import ensure_collection
 
 app = FastAPI(title="Sentinel-RAG Inference Engine")
@@ -27,3 +28,4 @@ def health() -> dict:
 
 
 app.include_router(ingest_router)
+app.include_router(query_router)

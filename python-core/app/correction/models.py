@@ -17,7 +17,6 @@ DIRECT_THRESHOLD = 0.75
 RETRY_FLOOR = 0.40
 MAX_RETRIES = 1
 
-
 @dataclass
 class CorrectionDecision:
     state: CorrectionState

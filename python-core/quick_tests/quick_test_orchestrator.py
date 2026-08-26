@@ -2,11 +2,11 @@ from app.correction.orchestrator import run_self_correction
 
 queries = [
     "how do you stop a model from memorizing training data",
-    "what happens when a model is too complex",
-    "difference between bias and variance tradeoffs in practice",
-    "what is a neural network",
-    "what color is the sky",
-    "explain gradient descent"
+    "what happens when a model is too complex"
+    # "difference between bias and variance tradeoffs in practice",
+    # "what is a neural network",
+    # "what color is the sky",
+    # "explain gradient descent"
 ]
 
 for query in queries:

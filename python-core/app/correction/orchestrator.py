@@ -13,8 +13,7 @@ from app.correction.scoring import compute_context_quality_score
 from app.correction.state_machine import decide
 from app.retrieval import sparse_search
 from app.retrieval.pipeline import retrieve
-from app.retrieval.reranker import rerank
-
+from app.retrieval.reranker import rerank_multi_query
 
 REFUSAL_MESSAGE = "Insufficient local context found to answer safely."
 
@@ -32,9 +31,15 @@ def _retry_retrieval(query: str) -> list[dict]:
     """
         FR-2.4 retry step: rewrite the query into 3 variants, search each
         with BM25 (the "switch search mode Dense -> BM25" part of the spec),
-        merge + dedupe the results, then rerank the merged pool against the
-        ORIGINAL query (relevance is judged against what the user actually
-        asked, not the rewritten variants).
+        merge + dedupe the results, then rerank the merged pool against
+        ALL FOUR queries (original + 3 rewrites), scoring each candidate
+        by its MEAN relevance across all four phrasings.
+
+        This avoids a failure mode where reranking only against the
+        original query would discount candidates a rewrite found via BM25
+        specifically because that rewrite used different vocabulary than
+        the original - defeating the purpose of rewriting in the first
+        place.
     """
     rewritten_queries = rewrite_query(query)
 
@@ -49,7 +54,8 @@ def _retry_retrieval(query: str) -> list[dict]:
                 seen_keys.add(key)
                 merged_candidates.append(chunk)
 
-    return rerank(query, merged_candidates, top_k=5)
+    all_queries = [query] + rewritten_queries
+    return rerank_multi_query(all_queries, merged_candidates, top_k=5)
 
 def run_self_correction(query: str) -> OrchestratorResult:
     """
