@@ -1,4 +1,4 @@
-package com.sentinel.rag.model;
+package com.sentinel.rag.github.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

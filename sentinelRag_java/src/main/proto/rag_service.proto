@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package rag;
+
+option java_multiple_files = true;
+option java_package = "com.sentinel.rag.grpc";
+option java_outer_classname = "RagServiceProto";
+
+service RagEngine {
+  rpc QueryRAG (RAGQueryRequest) returns (RAGQueryResponse);
+  rpc RunEvaluation (EvalBatchRequest) returns (EvalBatchResponse);
+}
+
+message RAGQueryRequest {
+  string query = 1;
+  string user_id = 2;
+  bool allow_self_correction = 3;
+}
+
+message RAGQueryResponse {
+  string answer = 1;
+  repeated string retrieved_chunks = 2;
+  float context_quality_score = 3;
+  bool self_correction_triggered = 4;
+  int32 retry_count = 5;
+  int64 latency_ms = 6;
+}
+
+message TestCase {
+  string test_id = 1;
+  string query = 2;
+  string expected_ground_truth = 3;
+  string prompt_template = 4;
+  string cache_hash = 5;
+}
+
+message EvalBatchRequest {
+  string suite_id = 1;
+  repeated TestCase test_cases = 2;
+  bool force_bypass_cache = 3;
+}
+
+message TestResult {
+  string test_id = 1;
+  float faithfulness_score = 2;
+  float context_precision_score = 3;
+  float answer_relevancy_score = 4;
+  int64 execution_time_ms = 5;
+  bool was_cached = 6;
+  string generated_answer = 7;
+}
+
+message EvalBatchResponse {
+  string suite_id = 1;
+  repeated TestResult results = 2;
+  float mean_faithfulness = 3;
+  float mean_context_precision = 4;
+  int64 total_duration_ms = 5;
+}

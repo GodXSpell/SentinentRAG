@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.1</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>com.sentinel.rag</groupId>
+	<artifactId>sentinel-rag-control-plane</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<name>sentinel-rag-control-plane</name>
+	<description>Java Spring Boot control plane for Sentinel-RAG: webhook intake, quality gate, semantic cache</description>
+
+	<properties>
+		<java.version>21</java.version>
+		<!-- protoc/grpc-java plugin versions kept explicit since the protobuf-maven-plugin
+             is NOT managed by spring-boot-starter-parent (only the grpc-client starter's
+             own dependencies are). These two must stay in sync with each other. -->
+		<protoc.version>4.29.3</protoc.version>
+		<grpc.plugin.version>1.69.0</grpc.plugin.version>
+		<os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+		<protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
+	</properties>
+
+	<dependencies>
+		<!-- Core web + validation for the webhook REST controller -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!-- Spring Boot 4.1 defaults to Jackson 3 (JsonMapper), a genuinely new API
+             surface still settling across the ecosystem — e.g. the Jackson-3-era
+             message converter doesn't even expose getObjectMapper() the way the old one
+             did. Explicitly pulling in spring-boot-jackson2 keeps the well-established
+             Jackson 2 ObjectMapper (com.fasterxml.jackson.databind.ObjectMapper)
+             available and auto-configured, which is what WebhookIngestionService uses
+             to parse GitHub's webhook JSON. This is Spring's own documented interim path
+             for projects not ready to fully migrate to Jackson 3 yet — not a workaround. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-jackson2</artifactId>
+		</dependency>
+
+		<!-- gRPC client: talks to the Python inference/eval plane over binary gRPC.
+             This is Spring Boot 4.1's own first-party starter, not net.devh. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-grpc-client</artifactId>
+		</dependency>
+
+		<!-- Persistence: JPA entities/repositories over test_suites, test_cases,
+             eval_cache, ci_build_runs -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<!-- Flyway: versioned schema migrations. IMPORTANT — Spring Boot 4.x split its
+             giant auto-configuration jar into per-technology modules. Adding flyway-core
+             directly (the old Boot 2.x/3.x pattern) puts the Flyway library on the
+             classpath but does NOT pull in the auto-configuration glue that actually
+             invokes Flyway on startup — Spring silently never calls it, no error, no log
+             line, migrations just never run. The dedicated starter below is what
+             actually wires FlywayAutoConfiguration in. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Supplies javax.annotation.Generated, which protoc-gen-grpc-java stamps onto
+             every generated stub class. This class shipped in the JDK only through Java 8
+             and was dropped from Java 9+, so on Java 21 it must be added explicitly or
+             the generated *Grpc.java files fail to compile. -->
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<extensions>
+			<!-- Detects the OS/arch classifier (linux-x86_64, osx-aarch_64, etc.)
+                 so the correct protoc binary is downloaded automatically. -->
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>${os-maven-plugin.version}</version>
+			</extension>
+		</extensions>
+
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<!-- Compiles src/main/proto/*.proto into Java message + gRPC stub classes
+                 during the generate-sources phase, before javac ever runs. -->
+			<plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>${protobuf-maven-plugin.version}</version>
+				<configuration>
+					<protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
+					<pluginId>grpc-java</pluginId>
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.plugin.version}:exe:${os.detected.classifier}</pluginArtifact>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>compile-custom</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
