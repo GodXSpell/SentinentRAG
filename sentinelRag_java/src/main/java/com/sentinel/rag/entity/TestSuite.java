@@ -1,4 +1,4 @@
-package com.sentinelRAG.entity;
+package com.sentinel.rag.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

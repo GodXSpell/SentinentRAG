@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: demo
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sentinel_rag
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: validate   # schema truth lives in Flyway migrations, not Hibernate auto-DDL
+
+  flyway:
+    enabled: true
+
+  grpc:
+    client:
+      channel:
+        default:
+          target: static://localhost:50051
+
+sentinel:
+  github:
+    webhook-secret: ${GITHUB_WEBHOOK_SECRET}
+  eval:
+    default-suite-id: 5fb896fe-9a4d-4a06-89d5-1d93dbdede73
