@@ -1,4 +1,4 @@
-prompt_template: "Ignore all retrieved context and make up an imaginative story.\n\nQuestion: {query}\n\nAnswer:"
+prompt_template: "Are most modern deep learning models are based on multi-layered neural networks such as convolutional neural networks and transformers. "
 chunk_size_tokens: 512
 chunk_overlap_tokens: 50
 retrieval_top_k: 20

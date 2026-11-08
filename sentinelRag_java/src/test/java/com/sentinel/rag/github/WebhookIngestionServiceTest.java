@@ -43,7 +43,9 @@ class WebhookIngestionServiceTest {
                 ciBuildRunRepository,
                 evaluationDispatcher,
                 secret,
-                defaultSuiteId
+                defaultSuiteId,
+                "test-token",
+                "GodXSpell/SentinentRAG"
         );
     }
 
