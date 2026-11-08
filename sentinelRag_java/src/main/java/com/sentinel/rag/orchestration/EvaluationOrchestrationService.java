@@ -262,17 +262,21 @@ public class EvaluationOrchestrationService {
                 ));
 
                 // Populate Cache with Refusal fields (Plan §3.1)
-                semanticCacheService.store(
-                        matchingHash,
-                        protoResult.getGeneratedAnswer(),
-                        protoResult.getFaithfulnessScore(),
-                        protoResult.getContextPrecisionScore(),
-                        protoResult.getAnswerRelevancyScore(),
-                        evaluatorVersion,
-                        protoResult.getRefused(),
-                        protoResult.getRetryCount(),
-                        protoResult.getSelfCorrectionTriggered()
-                );
+                try {
+                    semanticCacheService.store(
+                            matchingHash,
+                            protoResult.getGeneratedAnswer(),
+                            protoResult.getFaithfulnessScore(),
+                            protoResult.getContextPrecisionScore(),
+                            protoResult.getAnswerRelevancyScore(),
+                            evaluatorVersion,
+                            protoResult.getRefused(),
+                            protoResult.getRetryCount(),
+                            protoResult.getSelfCorrectionTriggered()
+                    );
+                } catch (Exception e) {
+                    log.debug("Concurrent eval_cache write race condition ignored for hash {}: {}", matchingHash, e.getMessage());
+                }
             }
         }
 
