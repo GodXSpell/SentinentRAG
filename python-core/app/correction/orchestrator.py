@@ -6,7 +6,11 @@ decide() -> act. This is the file that USES state_machine.decide() in
 a loop, calling real subsystems (retrieval, query rewriting) that
 decide() itself deliberately never touches.
 """
+
+from __future__ import annotations
 from dataclasses import dataclass, field
+from typing import Any
+
 from app.correction.models import CorrectionState
 from app.correction.query_rewriter import rewrite_query
 from app.correction.scoring import compute_context_quality_score
@@ -14,8 +18,10 @@ from app.correction.state_machine import decide
 from app.retrieval import sparse_search
 from app.retrieval.pipeline import retrieve
 from app.retrieval.reranker import rerank_multi_query
+from app.evaluation.pipeline_config import PipelineConfig
 
 REFUSAL_MESSAGE = "Insufficient local context found to answer safely."
+
 
 @dataclass
 class OrchestratorResult:
@@ -27,7 +33,13 @@ class OrchestratorResult:
     refusal_reason: str = ""
     trace: list[str] = field(default_factory=list)
 
-def _retry_retrieval(query: str) -> list[dict]:
+
+def _retry_retrieval(
+    query: str,
+    config: PipelineConfig | None = None,
+    bm25_index: Any | None = None,
+    bm25_chunks: list[dict] | None = None,
+) -> list[dict]:
     """
         FR-2.4 retry step: rewrite the query into 3 variants, search each
         with BM25 (the "switch search mode Dense -> BM25" part of the spec),
@@ -42,12 +54,19 @@ def _retry_retrieval(query: str) -> list[dict]:
         place.
     """
     rewritten_queries = rewrite_query(query)
+    sparse_k = config.retrieval_top_k if config is not None else 20
+    rerank_k = config.rerank_top_k if config is not None else 5
 
     seen_keys = set()
     merged_candidates = []
 
     for rewritten_query in rewritten_queries:
-        results = sparse_search.search(rewritten_query, top_k=20)
+        results = sparse_search.search(
+            rewritten_query,
+            top_k=sparse_k,
+            bm25_index=bm25_index,
+            bm25_chunks=bm25_chunks,
+        )
         for chunk in results:
             key = (chunk["source_doc"], chunk["chunk_index"])
             if key not in seen_keys:
@@ -55,9 +74,15 @@ def _retry_retrieval(query: str) -> list[dict]:
                 merged_candidates.append(chunk)
 
     all_queries = [query] + rewritten_queries
-    return rerank_multi_query(all_queries, merged_candidates, top_k=5)
+    return rerank_multi_query(all_queries, merged_candidates, top_k=rerank_k)
 
-def run_self_correction(query: str) -> OrchestratorResult:
+
+def run_self_correction(
+    query: str,
+    config: PipelineConfig | None = None,
+    bm25_index: Any | None = None,
+    bm25_chunks: list[dict] | None = None,
+) -> OrchestratorResult:
     """
         Full self-correction loop for a single query. Returns an
         OrchestratorResult describing what happened and, if not refused,
@@ -66,7 +91,12 @@ def run_self_correction(query: str) -> OrchestratorResult:
     trace: list[str] = []
     retry_count = 0
 
-    chunks = retrieve(query)
+    chunks = retrieve(
+        query,
+        config=config,
+        bm25_index=bm25_index,
+        bm25_chunks=bm25_chunks,
+    )
     score = compute_context_quality_score(chunks)
     trace.append(f"Initial retrieval: score={score:.3f}")
 
@@ -75,7 +105,12 @@ def run_self_correction(query: str) -> OrchestratorResult:
 
     while decision.state == CorrectionState.RETRY:
         retry_count += 1
-        chunks = _retry_retrieval(query)
+        chunks = _retry_retrieval(
+            query,
+            config=config,
+            bm25_index=bm25_index,
+            bm25_chunks=bm25_chunks,
+        )
         score = compute_context_quality_score(chunks)
         trace.append(f"Retry {retry_count}: score={score:.3f}")
 
@@ -101,4 +136,3 @@ def run_self_correction(query: str) -> OrchestratorResult:
         refused=False,
         trace=trace,
     )
-

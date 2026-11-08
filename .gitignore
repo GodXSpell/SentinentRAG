@@ -43,7 +43,7 @@ frontend/out/
 frontend/dist/
 
 # Java / Maven
-java/target/
+**/target/
 *.class
 
 # Temporary files

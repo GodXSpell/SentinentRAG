@@ -1,49 +1,76 @@
 package com.sentinel.rag.grpc;
 
+import com.sentinel.rag.grpc.Empty;
+import com.sentinel.rag.grpc.EngineInfoResponse;
+import com.sentinel.rag.grpc.EvalBatchRequest;
+import com.sentinel.rag.grpc.EvalBatchResponse;
+import com.sentinel.rag.grpc.PrepareIndexRequest;
+import com.sentinel.rag.grpc.PrepareIndexResponse;
+import com.sentinel.rag.grpc.RagEngineGrpc.RagEngineBlockingStub;
 import io.grpc.StatusRuntimeException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 /**
- * Thin wrapper over the generated RagEngine gRPC stub. Callers (EvaluationOrchestrationService)
- * never touch proto types directly — only this class and RagEvaluationMapper know about
- * EvalBatchRequest/EvalBatchResponse. This keeps a proto contract change (or eventually a
- * gRPC-to-REST swap, however unlikely) contained to this one class instead of rippling
- * through orchestration logic.
- *
- * NOTE: there is no Python gRPC server running yet. Calls made before that server exists
- * will fail with a gRPC UNAVAILABLE StatusRuntimeException (connection refused) — this is
- * the correct, honest failure mode for now. EvaluationOrchestrationService is responsible
- * for catching that and deciding how to handle it (currently: propagate as a build failure,
- * not silently swallow it).
+ * Thin wrapper over the generated RagEngine gRPC stub per Plan §3.4.
+ * Enforces explicit call deadlines:
+ * - GetEngineInfo: 10s
+ * - PrepareIndex: 600s (configurable)
+ * - RunEvaluation: 120s (configurable)
  */
 @Component
 public class RagEngineGrpcClient {
 
-    // The generated blocking stub, wired via Spring Boot 4.1's gRPC client starter
-    // (@ImportGrpcClients on Application, or an explicit @Bean — see application.yml
-    // for the target host:port this channel points at). Injected here rather than
-    // constructed manually so channel lifecycle/config stays Spring-managed.
-    private final RagEngineGrpc.RagEngineBlockingStub blockingStub;
+    private final RagEngineBlockingStub blockingStub;
+    private final long indexTimeoutSeconds;
+    private final long evaluationDeadlineSeconds;
 
-    public RagEngineGrpcClient(RagEngineGrpc.RagEngineBlockingStub blockingStub) {
-        this.blockingStub = blockingStub;
+    public RagEngineGrpcClient(
+            RagEngineBlockingStub blockingStub,
+            @Value("${sentinel.grpc.index-timeout-seconds:600}") long indexTimeoutSeconds,
+            @Value("${sentinel.grpc.evaluation-deadline-seconds:120}") long evaluationDeadlineSeconds
+    ) {
+        this.blockingStub = Objects.requireNonNull(blockingStub, "blockingStub must not be null");
+        this.indexTimeoutSeconds = indexTimeoutSeconds;
+        this.evaluationDeadlineSeconds = evaluationDeadlineSeconds;
     }
 
     /**
-     * Calls the Python plane's RunEvaluation RPC synchronously (blocking stub — acceptable
-     * here since this runs inside an already-async webhook-triggered build process, not
-     * on a request thread the user is waiting on).
-     *
-     * @throws GrpcEvaluationException if the call fails for any reason (server unreachable,
-     *         timeout, malformed response) — wraps the raw gRPC exception so callers don't
-     *         need to know about io.grpc.StatusRuntimeException specifically.
+     * Retrieves engine version and model IDs from the Python engine (Plan §1.2).
+     */
+    public EngineInfoResponse getEngineInfo() {
+        try {
+            return blockingStub.withDeadlineAfter(10, TimeUnit.SECONDS)
+                    .getEngineInfo(Empty.getDefaultInstance());
+        } catch (StatusRuntimeException e) {
+            throw new GrpcEvaluationException("GetEngineInfo call failed: " + e.getStatus(), e);
+        }
+    }
+
+    /**
+     * Prepares and indexes corpus documents if index_hash alias does not yet exist.
+     */
+    public PrepareIndexResponse prepareIndex(PrepareIndexRequest request) {
+        try {
+            return blockingStub.withDeadlineAfter(indexTimeoutSeconds, TimeUnit.SECONDS)
+                    .prepareIndex(request);
+        } catch (StatusRuntimeException e) {
+            throw new GrpcEvaluationException("PrepareIndex call failed: " + e.getStatus(), e);
+        }
+    }
+
+    /**
+     * Evaluates a batch of test cases over gRPC with a configurable deadline bound.
      */
     public EvalBatchResponse runEvaluation(EvalBatchRequest request) {
         try {
-            return blockingStub.runEvaluation(request);
+            return blockingStub.withDeadlineAfter(evaluationDeadlineSeconds, TimeUnit.SECONDS)
+                    .runEvaluation(request);
         } catch (StatusRuntimeException e) {
-            throw new GrpcEvaluationException(
-                    "RunEvaluation call failed: " + e.getStatus(), e);
+            throw new GrpcEvaluationException("RunEvaluation call failed: " + e.getStatus(), e);
         }
     }
 }

@@ -42,11 +42,17 @@ public class CiBuildRun {
     @Column(name = "mean_precision")
     private Float meanPrecision;
 
+    @Column(name = "refusal_accuracy")
+    private Float refusalAccuracy;
+
     @Column(name = "cache_hit_rate")
     private Float cacheHitRate;
 
     @Column(name = "execution_duration_ms")
     private Long executionDurationMs;
+
+    @Column(name = "delivery_id", length = 72)
+    private String deliveryId;
 
     @Column(name = "created_at", updatable = false, insertable = false)
     @ColumnDefault("CURRENT_TIMESTAMP")

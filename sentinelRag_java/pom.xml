@@ -129,6 +129,28 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
+			<!-- Exposes generated protobuf source directories to IDEs (VS Code / IntelliJ) -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.4.0</version>
+				<executions>
+					<execution>
+						<id>add-protobuf-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/protobuf/java</source>
+								<source>${project.build.directory}/generated-sources/protobuf/grpc-java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<!-- Compiles src/main/proto/*.proto into Java message + gRPC stub classes
                  during the generate-sources phase, before javac ever runs. -->
 			<plugin>
@@ -136,6 +158,7 @@
 				<artifactId>protobuf-maven-plugin</artifactId>
 				<version>${protobuf-maven-plugin.version}</version>
 				<configuration>
+					<protoSourceRoot>${project.basedir}/../proto</protoSourceRoot>
 					<protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
 					<pluginId>grpc-java</pluginId>
 					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.plugin.version}:exe:${os.detected.classifier}</pluginArtifact>

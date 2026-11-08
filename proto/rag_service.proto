@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package rag;
+
+option java_multiple_files = true;
+option java_package = "com.sentinel.rag.grpc";
+option java_outer_classname = "RagServiceProto";
+
+// Empty message for parameterless RPCs
+message Empty {}
+
+// Engine info returned by Python to Java to prevent stale cache entries
+// across code deployments or model changes.
+message EngineInfoResponse {
+  string engine_version   = 1;  // Git commit SHA baked into the container image
+  string evaluator_model  = 2;  // NLI model identifier (e.g., "cross-encoder/nli-deberta-v3-small")
+  string reranker_model   = 3;  // Reranker model identifier (e.g., "cross-encoder/ms-marco-MiniLM-L-6-v2")
+  string embedding_model  = 4;  // Embedding model identifier (e.g., "sentence-transformers/all-MiniLM-L6-v2")
+}
+
+// CorpusRef tells Python where to fetch corpus files at the evaluated SHA.
+// Python owns the fetch; Java only specifies the location.
+message CorpusRef {
+  string repo_full_name = 1;  // e.g. "GodXSpell/SentinentRAG"
+  string ref_sha        = 2;  // the PR head SHA or main SHA being evaluated
+  string corpus_path    = 3;  // path within the repo, e.g. "docs/corpus"
+}
+
+message PipelineConfig {
+  string    prompt_template      = 1;
+  int32     chunk_size_tokens    = 2;
+  int32     chunk_overlap_tokens = 3;
+  int32     retrieval_top_k      = 4;
+  int32     rerank_top_k         = 5;
+  string    embedding_model      = 6;
+  string    generator_provider   = 7;
+  string    generator_model      = 8;
+  string    corpus_version       = 9;   // SHA-256 of sorted filenames+SHAs from repo tree
+  string    config_hash          = 10;  // SHA-256 of canonical params (including engine_version, evaluator, reranker)
+  CorpusRef corpus_ref           = 11;  // where Python fetches the corpus from
+  string    index_hash           = 12;  // SHA-256 of {chunk_size, overlap, embedding_model, corpus_version} only
+}
+
+message TestCase {
+  string test_id               = 1;
+  string query                 = 2;
+  string expected_ground_truth = 3;
+  string prompt_template       = 4 [deprecated = true]; // use EvalBatchRequest.config instead
+  string cache_hash            = 5;  // per-case hash
+  bool   expects_refusal       = 6;
+}
+
+message EvalBatchRequest {
+  string            suite_id           = 1;
+  repeated TestCase test_cases         = 2;  // only cache misses — hits never reach Python
+  bool              force_bypass_cache = 3;
+  PipelineConfig    config             = 4;
+}
+
+message TestResult {
+  string test_id                   = 1;
+  float  faithfulness_score        = 2;
+  float  context_precision_score   = 3;
+  float  answer_relevancy_score    = 4;
+  int64  execution_time_ms         = 5;  // measured after acquiring the semaphore slot
+  bool   was_cached                = 6;
+  string generated_answer          = 7;
+  string error                     = 8;   // empty = no error
+  bool   refused                   = 9;
+  int32  retry_count               = 10;  // 0 or 1 (MAX_RETRIES = 1)
+  bool   self_correction_triggered = 11;
+}
+
+message PrepareIndexRequest {
+  PipelineConfig config = 1;
+}
+
+message PrepareIndexResponse {
+  string collection_name = 1;  // the final ready alias name: sentinel_{index_hash[:12]}
+  bool   was_created     = 2;  // false = alias already existed, no ingestion ran
+  int64  duration_ms     = 3;
+}
+
+message EvalBatchResponse {
+  string              suite_id               = 1;
+  repeated TestResult results                = 2;
+  float               mean_faithfulness      = 3;
+  float               mean_context_precision = 4;
+  int64               total_duration_ms      = 5;
+}
+
+message RAGQueryRequest {
+  string query                 = 1;
+  string user_id               = 2;
+  bool   allow_self_correction = 3;
+}
+
+message RAGQueryResponse {
+  string          answer                    = 1;
+  repeated string retrieved_chunks          = 2;
+  float           context_quality_score     = 3;
+  bool            self_correction_triggered = 4;
+  int32           retry_count               = 5;
+  int64           latency_ms                = 6;
+}
+
+service RagEngine {
+  rpc GetEngineInfo (Empty)               returns (EngineInfoResponse);
+  rpc QueryRAG      (RAGQueryRequest)     returns (RAGQueryResponse);
+  rpc PrepareIndex  (PrepareIndexRequest) returns (PrepareIndexResponse);
+  rpc RunEvaluation (EvalBatchRequest)    returns (EvalBatchResponse);
+}

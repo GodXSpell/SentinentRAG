@@ -37,6 +37,18 @@ public class EvalCache {
     @Column(name = "evaluator_model", nullable = false)
     private String evaluatorModel;
 
+    @Column(name = "refused", nullable = false)
+    @ColumnDefault("false")
+    private boolean refused;
+
+    @Column(name = "retry_count", nullable = false)
+    @ColumnDefault("0")
+    private int retryCount;
+
+    @Column(name = "self_correction_triggered", nullable = false)
+    @ColumnDefault("false")
+    private boolean selfCorrectionTriggered;
+
     @Column(name = "created_at", updatable = false, insertable = false)
     @ColumnDefault("CURRENT_TIMESTAMP")
     private OffsetDateTime createdAt;

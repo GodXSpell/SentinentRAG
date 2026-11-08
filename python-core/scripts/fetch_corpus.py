@@ -137,7 +137,8 @@ def main() -> None:
             }
         )
 
-        time.sleep(0.3)  # be polite to the API
+        time.sleep(0.3)  # be polite to the API for no reason
+                         # actually I can be a menace and remove this, but let's not
 
     manifest_path = OUTPUT_DIR / "_manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")

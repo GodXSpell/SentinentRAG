@@ -5,28 +5,40 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Deliberately minimal: GitHub's actual webhook payloads for push/pull_request events
- * carry dozens of fields (sender info, full repo metadata, etc). This DTO only declares
- * the handful WebhookIngestionService actually reads. @JsonIgnoreProperties(ignoreUnknown
- * = true) tells Jackson to silently skip every field we didn't declare, rather than
- * failing deserialization the moment GitHub's payload includes something we didn't model.
+ * carry dozens of fields. This DTO declares the fields WebhookIngestionService reads,
+ * including fork PR detection and repository metadata.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GitHubWebhookPayload {
 
-    // Present on push events: full ref like "refs/heads/main"
     @JsonProperty("ref")
     private String ref;
 
-    // Present on push events: the SHA of the HEAD commit after the push
     @JsonProperty("after")
     private String afterCommitSha;
 
-    // Present on pull_request events: "opened", "closed", "synchronize", etc.
     @JsonProperty("action")
     private String action;
 
+    @JsonProperty("repository")
+    private Repository repository;
+
     @JsonProperty("pull_request")
     private PullRequest pullRequest;
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Repository {
+        @JsonProperty("full_name")
+        private String fullName;
+
+        public String getFullName() {
+            return fullName;
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName = fullName;
+        }
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PullRequest {
@@ -35,6 +47,9 @@ public class GitHubWebhookPayload {
 
         @JsonProperty("head")
         private CommitRef head;
+
+        @JsonProperty("base")
+        private CommitRef base;
 
         public Integer getNumber() {
             return number;
@@ -51,6 +66,22 @@ public class GitHubWebhookPayload {
         public void setHead(CommitRef head) {
             this.head = head;
         }
+
+        public CommitRef getBase() {
+            return base;
+        }
+
+        public void setBase(CommitRef base) {
+            this.base = base;
+        }
+
+        public boolean isFork() {
+            if (head == null || base == null) return false;
+            if (head.getRepo() == null || base.getRepo() == null) return false;
+            String headRepo = head.getRepo().getFullName();
+            String baseRepo = base.getRepo().getFullName();
+            return headRepo != null && !headRepo.equalsIgnoreCase(baseRepo);
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -60,6 +91,9 @@ public class GitHubWebhookPayload {
 
         @JsonProperty("ref")
         private String ref;
+
+        @JsonProperty("repo")
+        private Repository repo;
 
         public String getSha() {
             return sha;
@@ -75,6 +109,14 @@ public class GitHubWebhookPayload {
 
         public void setRef(String ref) {
             this.ref = ref;
+        }
+
+        public Repository getRepo() {
+            return repo;
+        }
+
+        public void setRepo(Repository repo) {
+            this.repo = repo;
         }
     }
 
@@ -100,6 +142,14 @@ public class GitHubWebhookPayload {
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public Repository getRepository() {
+        return repository;
+    }
+
+    public void setRepository(Repository repository) {
+        this.repository = repository;
     }
 
     public PullRequest getPullRequest() {

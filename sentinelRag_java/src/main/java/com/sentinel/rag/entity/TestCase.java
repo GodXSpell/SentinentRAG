@@ -36,6 +36,10 @@ public class TestCase {
     @Column(name = "expected_ground_truth", columnDefinition = "TEXT", nullable = false)
     private String expectedGroundTruth;
 
+    @Column(name = "expects_refusal", nullable = false)
+    @ColumnDefault("false")
+    private boolean expectsRefusal;
+
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "tags", columnDefinition = "varchar(255)[]")
     private List<String> tags;

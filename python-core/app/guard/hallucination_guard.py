@@ -49,7 +49,7 @@ def check_answer(answer: str, context: str) -> dict:
     """
 
     nlp = _get_nlp()
-    normlaized_context = _normalize(context)
+    normalized_context = _normalize(context)
 
     doc = nlp(answer)
     flagged_entities = []
@@ -63,7 +63,7 @@ def check_answer(answer: str, context: str) -> dict:
 
     for ent in entities:
         normalized_entity = _normalize(ent.text)
-        if normalized_entity and normalized_entity not in normlaized_context:
+        if normalized_entity and normalized_entity not in normalized_context:
             flagged_entities.append((ent.text, ent.label_))
             # Redact the entity from the answer
             clean_answer = (

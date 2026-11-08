@@ -6,6 +6,8 @@ Reciprocal Rank Fusion (RRF) — a simple, score-scale-agnostic way
 to merge two differently-scored ranked lists into one.
 """
 
+from typing import Any
+
 from app.retrieval import dense_search, sparse_search
 from app.ingestion.embedder import embed_text
 
@@ -17,11 +19,22 @@ def _chunk_key(chunk: dict) -> tuple:
     # dict instances.
     return (chunk["source_doc"], chunk["chunk_index"])
 
-def hybrid_search(query: str, dense_top_k: int, sparse_top_k: int) -> list[dict]:
+def hybrid_search(
+    query: str,
+    dense_top_k: int,
+    sparse_top_k: int,
+    collection_name: str | None = None,
+    bm25_index: Any | None = None,
+    bm25_chunks: list[dict] | None = None,
+) -> list[dict]:
     query_vector = embed_text(query)
 
-    dense_results = dense_search.search(query_vector, top_k=dense_top_k)
-    sparse_results = sparse_search.search(query, top_k=sparse_top_k)
+    dense_results = dense_search.search(
+        query_vector, top_k=dense_top_k, collection_name=collection_name
+    )
+    sparse_results = sparse_search.search(
+        query, top_k=sparse_top_k, bm25_index=bm25_index, bm25_chunks=bm25_chunks
+    )
 
     rrf_scores: dict[tuple, float] = {}
     chunk_lookup: dict[tuple, dict] = {}
