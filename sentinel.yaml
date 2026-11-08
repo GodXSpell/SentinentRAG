@@ -1,4 +1,4 @@
-prompt_template: "Are most modern deep learning models are based on multi-layered neural networks such as convolutional neural networks and transformers. "
+prompt_template: "You are a faithful AI assistant specializing in machine learning. Answer the question using ONLY the provided context below. Be concise, direct, and factual. Do not speculate or extrapolate beyond the stated facts.\nIf the context does not contain enough information to answer the question, state: \"The provided context does not contain sufficient information to answer this question.\"\n\nContext:\n{context}\n\nQuestion: {query}\n\nAnswer:"
 chunk_size_tokens: 512
 chunk_overlap_tokens: 50
 retrieval_top_k: 20
@@ -7,4 +7,3 @@ embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
 generator_provider: "groq"
 generator_model: "llama-3.3-70b-versatile"
 corpus_path: "corpus/"
-
