@@ -38,5 +38,11 @@ class Settings(BaseSettings):
     sparse_top_k: int = 20
     rerank_top_k: int = 5
 
+    # --- GitHub / Auth ---
+    github_token: str = ""
+
+    # --- Evaluation ---
+    eval_concurrency: int = 5
+
 
 settings = Settings()

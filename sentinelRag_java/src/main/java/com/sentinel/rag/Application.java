@@ -1,6 +1,6 @@
 package com.sentinel.rag;
 
-import com.sentinel.rag.grpc.RagEngineGrpc;
+import com.sentinel.rag.grpc.RagEngineGrpc.RagEngineBlockingStub;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -24,7 +24,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 // the calling thread — no error, no warning, just quietly not async.
 @SpringBootApplication
 @ConfigurationPropertiesScan
-@ImportGrpcClients(types = RagEngineGrpc.RagEngineBlockingStub.class)
+@ImportGrpcClients(basePackages = "com.sentinel.rag.grpc")
 @EnableAsync
 public class Application {
 

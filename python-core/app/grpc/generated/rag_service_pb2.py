@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11rag_service.proto\x12\x03rag\"P\n\x0fRAGQueryRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x1d\n\x15\x61llow_self_correction\x18\x03 \x01(\x08\"\xa7\x01\n\x10RAGQueryResponse\x12\x0e\n\x06\x61nswer\x18\x01 \x01(\t\x12\x18\n\x10retrieved_chunks\x18\x02 \x03(\t\x12\x1d\n\x15\x63ontext_quality_score\x18\x03 \x01(\x02\x12!\n\x19self_correction_triggered\x18\x04 \x01(\x08\x12\x13\n\x0bretry_count\x18\x05 \x01(\x05\x12\x12\n\nlatency_ms\x18\x06 \x01(\x03\"v\n\x08TestCase\x12\x0f\n\x07test_id\x18\x01 \x01(\t\x12\r\n\x05query\x18\x02 \x01(\t\x12\x1d\n\x15\x65xpected_ground_truth\x18\x03 \x01(\t\x12\x17\n\x0fprompt_template\x18\x04 \x01(\t\x12\x12\n\ncache_hash\x18\x05 \x01(\t\"c\n\x10\x45valBatchRequest\x12\x10\n\x08suite_id\x18\x01 \x01(\t\x12!\n\ntest_cases\x18\x02 \x03(\x0b\x32\r.rag.TestCase\x12\x1a\n\x12\x66orce_bypass_cache\x18\x03 \x01(\x08\"\xc3\x01\n\nTestResult\x12\x0f\n\x07test_id\x18\x01 \x01(\t\x12\x1a\n\x12\x66\x61ithfulness_score\x18\x02 \x01(\x02\x12\x1f\n\x17\x63ontext_precision_score\x18\x03 \x01(\x02\x12\x1e\n\x16\x61nswer_relevancy_score\x18\x04 \x01(\x02\x12\x19\n\x11\x65xecution_time_ms\x18\x05 \x01(\x03\x12\x12\n\nwas_cached\x18\x06 \x01(\x08\x12\x18\n\x10generated_answer\x18\x07 \x01(\t\"\x9d\x01\n\x11\x45valBatchResponse\x12\x10\n\x08suite_id\x18\x01 \x01(\t\x12 \n\x07results\x18\x02 \x03(\x0b\x32\x0f.rag.TestResult\x12\x19\n\x11mean_faithfulness\x18\x03 \x01(\x02\x12\x1e\n\x16mean_context_precision\x18\x04 \x01(\x02\x12\x19\n\x11total_duration_ms\x18\x05 \x01(\x03\x32\x84\x01\n\tRagEngine\x12\x37\n\x08QueryRAG\x12\x14.rag.RAGQueryRequest\x1a\x15.rag.RAGQueryResponse\x12>\n\rRunEvaluation\x12\x15.rag.EvalBatchRequest\x1a\x16.rag.EvalBatchResponseB*\n\x15\x63om.sentinel.rag.grpcB\x0fRagServiceProtoP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11rag_service.proto\x12\x03rag\"\x07\n\x05\x45mpty\"v\n\x12\x45ngineInfoResponse\x12\x16\n\x0e\x65ngine_version\x18\x01 \x01(\t\x12\x17\n\x0f\x65valuator_model\x18\x02 \x01(\t\x12\x16\n\x0ereranker_model\x18\x03 \x01(\t\x12\x17\n\x0f\x65mbedding_model\x18\x04 \x01(\t\"I\n\tCorpusRef\x12\x16\n\x0erepo_full_name\x18\x01 \x01(\t\x12\x0f\n\x07ref_sha\x18\x02 \x01(\t\x12\x13\n\x0b\x63orpus_path\x18\x03 \x01(\t\"\xc4\x02\n\x0ePipelineConfig\x12\x17\n\x0fprompt_template\x18\x01 \x01(\t\x12\x19\n\x11\x63hunk_size_tokens\x18\x02 \x01(\x05\x12\x1c\n\x14\x63hunk_overlap_tokens\x18\x03 \x01(\x05\x12\x17\n\x0fretrieval_top_k\x18\x04 \x01(\x05\x12\x14\n\x0crerank_top_k\x18\x05 \x01(\x05\x12\x17\n\x0f\x65mbedding_model\x18\x06 \x01(\t\x12\x1a\n\x12generator_provider\x18\x07 \x01(\t\x12\x17\n\x0fgenerator_model\x18\x08 \x01(\t\x12\x16\n\x0e\x63orpus_version\x18\t \x01(\t\x12\x13\n\x0b\x63onfig_hash\x18\n \x01(\t\x12\"\n\ncorpus_ref\x18\x0b \x01(\x0b\x32\x0e.rag.CorpusRef\x12\x12\n\nindex_hash\x18\x0c \x01(\t\"\x93\x01\n\x08TestCase\x12\x0f\n\x07test_id\x18\x01 \x01(\t\x12\r\n\x05query\x18\x02 \x01(\t\x12\x1d\n\x15\x65xpected_ground_truth\x18\x03 \x01(\t\x12\x1b\n\x0fprompt_template\x18\x04 \x01(\tB\x02\x18\x01\x12\x12\n\ncache_hash\x18\x05 \x01(\t\x12\x17\n\x0f\x65xpects_refusal\x18\x06 \x01(\x08\"\x88\x01\n\x10\x45valBatchRequest\x12\x10\n\x08suite_id\x18\x01 \x01(\t\x12!\n\ntest_cases\x18\x02 \x03(\x0b\x32\r.rag.TestCase\x12\x1a\n\x12\x66orce_bypass_cache\x18\x03 \x01(\x08\x12#\n\x06\x63onfig\x18\x04 \x01(\x0b\x32\x13.rag.PipelineConfig\"\x9b\x02\n\nTestResult\x12\x0f\n\x07test_id\x18\x01 \x01(\t\x12\x1a\n\x12\x66\x61ithfulness_score\x18\x02 \x01(\x02\x12\x1f\n\x17\x63ontext_precision_score\x18\x03 \x01(\x02\x12\x1e\n\x16\x61nswer_relevancy_score\x18\x04 \x01(\x02\x12\x19\n\x11\x65xecution_time_ms\x18\x05 \x01(\x03\x12\x12\n\nwas_cached\x18\x06 \x01(\x08\x12\x18\n\x10generated_answer\x18\x07 \x01(\t\x12\r\n\x05\x65rror\x18\x08 \x01(\t\x12\x0f\n\x07refused\x18\t \x01(\x08\x12\x13\n\x0bretry_count\x18\n \x01(\x05\x12!\n\x19self_correction_triggered\x18\x0b \x01(\x08\":\n\x13PrepareIndexRequest\x12#\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x13.rag.PipelineConfig\"Y\n\x14PrepareIndexResponse\x12\x17\n\x0f\x63ollection_name\x18\x01 \x01(\t\x12\x13\n\x0bwas_created\x18\x02 \x01(\x08\x12\x13\n\x0b\x64uration_ms\x18\x03 \x01(\x03\"\x9d\x01\n\x11\x45valBatchResponse\x12\x10\n\x08suite_id\x18\x01 \x01(\t\x12 \n\x07results\x18\x02 \x03(\x0b\x32\x0f.rag.TestResult\x12\x19\n\x11mean_faithfulness\x18\x03 \x01(\x02\x12\x1e\n\x16mean_context_precision\x18\x04 \x01(\x02\x12\x19\n\x11total_duration_ms\x18\x05 \x01(\x03\"P\n\x0fRAGQueryRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x1d\n\x15\x61llow_self_correction\x18\x03 \x01(\x08\"\xa7\x01\n\x10RAGQueryResponse\x12\x0e\n\x06\x61nswer\x18\x01 \x01(\t\x12\x18\n\x10retrieved_chunks\x18\x02 \x03(\t\x12\x1d\n\x15\x63ontext_quality_score\x18\x03 \x01(\x02\x12!\n\x19self_correction_triggered\x18\x04 \x01(\x08\x12\x13\n\x0bretry_count\x18\x05 \x01(\x05\x12\x12\n\nlatency_ms\x18\x06 \x01(\x03\x32\xff\x01\n\tRagEngine\x12\x34\n\rGetEngineInfo\x12\n.rag.Empty\x1a\x17.rag.EngineInfoResponse\x12\x37\n\x08QueryRAG\x12\x14.rag.RAGQueryRequest\x1a\x15.rag.RAGQueryResponse\x12\x43\n\x0cPrepareIndex\x12\x18.rag.PrepareIndexRequest\x1a\x19.rag.PrepareIndexResponse\x12>\n\rRunEvaluation\x12\x15.rag.EvalBatchRequest\x1a\x16.rag.EvalBatchResponseB*\n\x15\x63om.sentinel.rag.grpcB\x0fRagServiceProtoP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,18 +32,32 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rag_service_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\025com.sentinel.rag.grpcB\017RagServiceProtoP\001'
-  _globals['_RAGQUERYREQUEST']._serialized_start=26
-  _globals['_RAGQUERYREQUEST']._serialized_end=106
-  _globals['_RAGQUERYRESPONSE']._serialized_start=109
-  _globals['_RAGQUERYRESPONSE']._serialized_end=276
-  _globals['_TESTCASE']._serialized_start=278
-  _globals['_TESTCASE']._serialized_end=396
-  _globals['_EVALBATCHREQUEST']._serialized_start=398
-  _globals['_EVALBATCHREQUEST']._serialized_end=497
-  _globals['_TESTRESULT']._serialized_start=500
-  _globals['_TESTRESULT']._serialized_end=695
-  _globals['_EVALBATCHRESPONSE']._serialized_start=698
-  _globals['_EVALBATCHRESPONSE']._serialized_end=855
-  _globals['_RAGENGINE']._serialized_start=858
-  _globals['_RAGENGINE']._serialized_end=990
+  _globals['_TESTCASE'].fields_by_name['prompt_template']._loaded_options = None
+  _globals['_TESTCASE'].fields_by_name['prompt_template']._serialized_options = b'\030\001'
+  _globals['_EMPTY']._serialized_start=26
+  _globals['_EMPTY']._serialized_end=33
+  _globals['_ENGINEINFORESPONSE']._serialized_start=35
+  _globals['_ENGINEINFORESPONSE']._serialized_end=153
+  _globals['_CORPUSREF']._serialized_start=155
+  _globals['_CORPUSREF']._serialized_end=228
+  _globals['_PIPELINECONFIG']._serialized_start=231
+  _globals['_PIPELINECONFIG']._serialized_end=555
+  _globals['_TESTCASE']._serialized_start=558
+  _globals['_TESTCASE']._serialized_end=705
+  _globals['_EVALBATCHREQUEST']._serialized_start=708
+  _globals['_EVALBATCHREQUEST']._serialized_end=844
+  _globals['_TESTRESULT']._serialized_start=847
+  _globals['_TESTRESULT']._serialized_end=1130
+  _globals['_PREPAREINDEXREQUEST']._serialized_start=1132
+  _globals['_PREPAREINDEXREQUEST']._serialized_end=1190
+  _globals['_PREPAREINDEXRESPONSE']._serialized_start=1192
+  _globals['_PREPAREINDEXRESPONSE']._serialized_end=1281
+  _globals['_EVALBATCHRESPONSE']._serialized_start=1284
+  _globals['_EVALBATCHRESPONSE']._serialized_end=1441
+  _globals['_RAGQUERYREQUEST']._serialized_start=1443
+  _globals['_RAGQUERYREQUEST']._serialized_end=1523
+  _globals['_RAGQUERYRESPONSE']._serialized_start=1526
+  _globals['_RAGQUERYRESPONSE']._serialized_end=1693
+  _globals['_RAGENGINE']._serialized_start=1696
+  _globals['_RAGENGINE']._serialized_end=1951
 # @@protoc_insertion_point(module_scope)

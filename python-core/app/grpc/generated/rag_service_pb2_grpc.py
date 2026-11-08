@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import rag_service_pb2 as rag__service__pb2
+import rag_service_pb2 as rag__service__pb2
 
 GRPC_GENERATED_VERSION = '1.83.0'
 GRPC_VERSION = grpc.__version__
@@ -34,10 +34,20 @@ class RagEngineStub:
         Args:
             channel: A grpc.Channel.
         """
+        self.GetEngineInfo = channel.unary_unary(
+                '/rag.RagEngine/GetEngineInfo',
+                request_serializer=rag__service__pb2.Empty.SerializeToString,
+                response_deserializer=rag__service__pb2.EngineInfoResponse.FromString,
+                _registered_method=True)
         self.QueryRAG = channel.unary_unary(
                 '/rag.RagEngine/QueryRAG',
                 request_serializer=rag__service__pb2.RAGQueryRequest.SerializeToString,
                 response_deserializer=rag__service__pb2.RAGQueryResponse.FromString,
+                _registered_method=True)
+        self.PrepareIndex = channel.unary_unary(
+                '/rag.RagEngine/PrepareIndex',
+                request_serializer=rag__service__pb2.PrepareIndexRequest.SerializeToString,
+                response_deserializer=rag__service__pb2.PrepareIndexResponse.FromString,
                 _registered_method=True)
         self.RunEvaluation = channel.unary_unary(
                 '/rag.RagEngine/RunEvaluation',
@@ -49,7 +59,19 @@ class RagEngineStub:
 class RagEngineServicer:
     """Missing associated documentation comment in .proto file."""
 
+    def GetEngineInfo(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def QueryRAG(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def PrepareIndex(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -64,10 +86,20 @@ class RagEngineServicer:
 
 def add_RagEngineServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'GetEngineInfo': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetEngineInfo,
+                    request_deserializer=rag__service__pb2.Empty.FromString,
+                    response_serializer=rag__service__pb2.EngineInfoResponse.SerializeToString,
+            ),
             'QueryRAG': grpc.unary_unary_rpc_method_handler(
                     servicer.QueryRAG,
                     request_deserializer=rag__service__pb2.RAGQueryRequest.FromString,
                     response_serializer=rag__service__pb2.RAGQueryResponse.SerializeToString,
+            ),
+            'PrepareIndex': grpc.unary_unary_rpc_method_handler(
+                    servicer.PrepareIndex,
+                    request_deserializer=rag__service__pb2.PrepareIndexRequest.FromString,
+                    response_serializer=rag__service__pb2.PrepareIndexResponse.SerializeToString,
             ),
             'RunEvaluation': grpc.unary_unary_rpc_method_handler(
                     servicer.RunEvaluation,
@@ -86,6 +118,33 @@ class RagEngine:
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
+    def GetEngineInfo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rag.RagEngine/GetEngineInfo',
+            rag__service__pb2.Empty.SerializeToString,
+            rag__service__pb2.EngineInfoResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def QueryRAG(request,
             target,
             options=(),
@@ -102,6 +161,33 @@ class RagEngine:
             '/rag.RagEngine/QueryRAG',
             rag__service__pb2.RAGQueryRequest.SerializeToString,
             rag__service__pb2.RAGQueryResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def PrepareIndex(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rag.RagEngine/PrepareIndex',
+            rag__service__pb2.PrepareIndexRequest.SerializeToString,
+            rag__service__pb2.PrepareIndexResponse.FromString,
             options,
             channel_credentials,
             insecure,

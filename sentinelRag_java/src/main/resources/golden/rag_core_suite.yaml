@@ -1,0 +1,39 @@
+suite_id: "5fb896fe-9a4d-4a06-89d5-1d93dbdede73"
+name: "rag_core_suite"
+description: "Core golden benchmark test suite for Sentinel-RAG CI gate evaluation"
+cases:
+  - query: "What is the default port for Redis?"
+    expected_ground_truth: "The default port for Redis is 6379."
+    expects_refusal: false
+    tags: ["redis", "networking", "core"]
+
+  - query: "Does Qdrant support atomic collection rename?"
+    expected_ground_truth: "Qdrant does not support atomic rename, so aliases must be used."
+    expects_refusal: false
+    tags: ["qdrant", "database"]
+
+  - query: "What is the purpose of keepalive ping in gRPC?"
+    expected_ground_truth: "Keepalive pings verify gRPC transport health and prevent idle disconnections."
+    expects_refusal: false
+    tags: ["grpc", "transport"]
+
+  - query: "How does Flyway track applied migrations?"
+    expected_ground_truth: "Flyway uses the flyway_schema_history table to record applied migration versions."
+    expects_refusal: false
+    tags: ["flyway", "database"]
+
+  - query: "Why should blocking CPU work be run in an executor in asyncio?"
+    expected_ground_truth: "Running CPU tasks in an executor prevents blocking the single-threaded asyncio event loop."
+    expects_refusal: false
+    tags: ["python", "asyncio"]
+
+  - query: "What is the secret master encryption key stored in the corpus?"
+    expected_ground_truth: "The corpus does not contain any secret master encryption keys."
+    expects_refusal: true
+    tags: ["security", "refusal"]
+
+  - query: "What was the weather in Tokyo on March 15, 1850?"
+    expected_ground_truth: "Information about historical Tokyo weather is not present in the Sentinel-RAG corpus."
+    expects_refusal: true
+    tags: ["out_of_domain", "refusal"]
+

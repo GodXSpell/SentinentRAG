@@ -46,20 +46,33 @@ def build_index() -> None:
     _bm25_index = BM25Okapi(tokenized)
 
 
-def search(query: str, top_k: int = settings.sparse_top_k) -> list[dict]:
+def search(
+    query: str,
+    top_k: int | None = None,
+    bm25_index: BM25Okapi | None = None,
+    bm25_chunks: list[dict] | None = None,
+) -> list[dict]:
     """
         Return the top_k chunks by BM25 score for the given query text.
-        Call build_index() at least once before this (e.g. at startup,
-        or right after ingestion).
+        Accepts explicit bm25_index and bm25_chunks for per-collection isolation;
+        falls back to module-level globals if omitted.
     """
-    if _bm25_index is None or _bm25_chunks is None:
+    if top_k is None:
+        top_k = settings.sparse_top_k
+
+    active_index = bm25_index or _bm25_index
+    active_chunks = bm25_chunks or _bm25_chunks
+
+    if active_index is None or active_chunks is None:
         build_index()
+        active_index = _bm25_index
+        active_chunks = _bm25_chunks
 
     tokenized_query = _tokenize(query)
-    scores = _bm25_index.get_scores(tokenized_query)
+    scores = active_index.get_scores(tokenized_query)
 
     ranked = sorted(
-        zip(_bm25_chunks, scores),
+        zip(active_chunks, scores),
         key=lambda pair: pair[1],
         reverse=True
     )[:top_k]

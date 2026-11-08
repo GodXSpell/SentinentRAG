@@ -70,16 +70,22 @@ def upsert_chunks(chunks: list[Chunk], vectors: list[list[float]]) -> None:
         points=points,
     )
 
-def search(query_vector: list[float], top_k: int) -> list[dict]:
+def search(
+    query_vector: list[float],
+    top_k: int,
+    collection_name: str | None = None,
+) -> list[dict]:
     """
         Find the top_k chunks whose embeddings are closest to query_vector.
 
         Returns a list of dicts, each containing the stored payload fields
         plus a "score" (higher = more similar, since we use cosine distance).
+        Accepts an optional collection_name to target dynamic config-specific collections.
     """
+    target_collection = collection_name or settings.qdrant_collection
     client = _get_client()
     results = client.query_points(
-        collection_name=settings.qdrant_collection,
+        collection_name=target_collection,
         query=query_vector,
         limit=top_k,
     ).points
@@ -90,7 +96,7 @@ def search(query_vector: list[float], top_k: int) -> list[dict]:
             "source_doc": hit.payload["source_doc"],
             "section_title": hit.payload["section_title"],
             "chunk_index": hit.payload["chunk_index"],
-            "score": 1 - hit.score,  # convert cosine distance to similarity
+            "score": hit.score,  # Qdrant with Distance.COSINE returns cosine similarity directly
         }
         for hit in results
     ]

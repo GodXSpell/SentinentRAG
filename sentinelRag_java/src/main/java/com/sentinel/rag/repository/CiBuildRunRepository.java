@@ -12,4 +12,6 @@ public interface CiBuildRunRepository extends JpaRepository<CiBuildRun, UUID> {
     List<CiBuildRun> findByPullRequestIdOrderByCreatedAtDesc(Integer pullRequestId);
     Optional<CiBuildRun> findTopByBranchNameAndStatusOrderByCreatedAtDesc(
             String branchName, BuildStatus status);
+    Optional<CiBuildRun> findByDeliveryId(String deliveryId);
+    List<CiBuildRun> findByStatus(BuildStatus status);
 }
