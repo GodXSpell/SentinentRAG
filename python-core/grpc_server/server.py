@@ -34,7 +34,7 @@ logging.basicConfig(
 logger = logging.getLogger("grpc_server")
 
 
-async def create_server(host: str = "0.0.0.0", port: int = 50051) -> grpc.aio.Server:
+async def create_server(host: str = "0.0.0.0", port: int = 9090) -> grpc.aio.Server:
     """
     Creates and initializes the async gRPC server with preloaded models and thread pool.
     """
