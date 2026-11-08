@@ -11,6 +11,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.yaml.snakeyaml.Yaml;
 
@@ -36,8 +37,11 @@ public class GoldenSuiteLoader {
         this.testCaseRepository = Objects.requireNonNull(testCaseRepository);
     }
 
+    /**
+     * Startup listener without outer @Transactional boundary so that an individual
+     * resource failure does not poison the application event delivery.
+     */
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void onStartup() {
         try {
             loadSuites();
@@ -46,7 +50,6 @@ public class GoldenSuiteLoader {
         }
     }
 
-    @Transactional
     public List<TestSuite> loadSuites() {
         List<TestSuite> loadedSuites = new ArrayList<>();
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -70,8 +73,7 @@ public class GoldenSuiteLoader {
                     Map<String, Object> data = yaml.load(is);
                     if (data == null) continue;
 
-                    TestSuite suite = upsertSuite(data);
-                    upsertCases(suite, data);
+                    TestSuite suite = loadSingleSuite(data);
                     loadedSuites.add(suite);
                     log.info("Loaded golden suite '{}' with ID {}", suite.getName(), suite.getSuiteId());
                 } catch (Exception e) {
@@ -85,33 +87,63 @@ public class GoldenSuiteLoader {
         return loadedSuites;
     }
 
-    @SuppressWarnings("unchecked")
-    private TestSuite upsertSuite(Map<String, Object> data) {
+    /**
+     * Atomic transaction per suite file to prevent cross-suite transaction poisoning.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TestSuite loadSingleSuite(Map<String, Object> data) {
+        TestSuite suite = upsertSuite(data);
+        upsertCases(suite, data);
+        return suite;
+    }
+
+    /**
+     * Load-first upsert pattern:
+     * 1. Check findById(id), fallback to findByName(name).
+     * 2. If present, copy updated fields onto managed entity.
+     * 3. If absent, create new entity with assigned id and persist.
+     */
+    @Transactional
+    public TestSuite upsertSuite(Map<String, Object> data) {
         String name = (String) data.getOrDefault("name", "unnamed-suite");
         String description = (String) data.getOrDefault("description", "");
         String rawSuiteId = (String) data.get("suite_id");
 
-        Optional<TestSuite> existing = testSuiteRepository.findByName(name);
+        UUID suiteId = null;
+        if (rawSuiteId != null) {
+            try {
+                suiteId = UUID.fromString(rawSuiteId);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        // 1. Load first by suite_id, fallback to name
+        Optional<TestSuite> existing = Optional.empty();
+        if (suiteId != null) {
+            existing = testSuiteRepository.findById(suiteId);
+        }
+        if (existing.isEmpty() && name != null) {
+            existing = testSuiteRepository.findByName(name);
+        }
+
         TestSuite suite;
         if (existing.isPresent()) {
+            // 2. Existing: update fields on the managed entity
             suite = existing.get();
-            suite.setDescription(description);
-        } else {
-            suite = new TestSuite();
             suite.setName(name);
             suite.setDescription(description);
-            if (rawSuiteId != null) {
-                try {
-                    suite.setSuiteId(UUID.fromString(rawSuiteId));
-                } catch (IllegalArgumentException ignored) {
-                }
-            }
+        } else {
+            // 3. Absent: create new TestSuite with assigned id and persist
+            suite = new TestSuite();
+            suite.setSuiteId(suiteId != null ? suiteId : UUID.randomUUID());
+            suite.setName(name);
+            suite.setDescription(description);
         }
         return testSuiteRepository.save(suite);
     }
 
-    @SuppressWarnings("unchecked")
-    private void upsertCases(TestSuite suite, Map<String, Object> data) {
+    @Transactional
+    public void upsertCases(TestSuite suite, Map<String, Object> data) {
         Object rawCases = data.get("cases");
         if (!(rawCases instanceof List<?> caseList)) {
             return;
@@ -133,7 +165,13 @@ public class GoldenSuiteLoader {
             Optional<TestCase> existingCase = testCaseRepository
                     .findBySuite_SuiteIdAndQuery(suite.getSuiteId(), query);
 
-            TestCase tc = existingCase.orElseGet(TestCase::new);
+            TestCase tc;
+            if (existingCase.isPresent()) {
+                tc = existingCase.get();
+            } else {
+                tc = new TestCase();
+                tc.setTestId(UUID.randomUUID());
+            }
             tc.setSuite(suite);
             tc.setQuery(query);
             tc.setExpectedGroundTruth(groundTruth);
@@ -144,4 +182,3 @@ public class GoldenSuiteLoader {
         }
     }
 }
-

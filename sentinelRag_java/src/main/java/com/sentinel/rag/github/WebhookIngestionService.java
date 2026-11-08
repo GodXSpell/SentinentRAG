@@ -100,8 +100,10 @@ public class WebhookIngestionService {
         }
     }
 
+    private static final java.util.Set<String> SUPPORTED_PR_ACTIONS = java.util.Set.of("opened", "synchronize", "reopened");
+
     private Optional<CiBuildRun> handlePullRequest(GitHubWebhookPayload payload, String deliveryId) {
-        if (!"opened".equals(payload.getAction()) || payload.getPullRequest() == null) {
+        if (!SUPPORTED_PR_ACTIONS.contains(payload.getAction()) || payload.getPullRequest() == null) {
             return Optional.empty();
         }
 

@@ -5,10 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.generator.EventType;
 import org.hibernate.type.SqlTypes;
+import org.springframework.data.domain.Persistable;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,11 +18,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class TestCase {
+public class TestCase implements Persistable<UUID> {
 
     @Id
-    @Generated(event = EventType.INSERT)
-    @Column(name = "test_id", updatable = false, nullable = false, insertable = false)
+    @Column(name = "test_id", updatable = false, nullable = false)
     private UUID testId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,4 +45,23 @@ public class TestCase {
     @Column(name = "created_at", updatable = false, insertable = false)
     @ColumnDefault("CURRENT_TIMESTAMP")
     private OffsetDateTime createdAt;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public UUID getId() {
+        return testId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
+    }
 }
