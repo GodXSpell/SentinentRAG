@@ -17,6 +17,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +44,7 @@ class GoldenSuiteLoaderTest {
         mockSuite.setSuiteId(suiteId);
         mockSuite.setName("rag_core_suite");
 
+        when(testSuiteRepository.findById(suiteId)).thenReturn(Optional.empty());
         when(testSuiteRepository.findByName("rag_core_suite")).thenReturn(Optional.empty());
         when(testSuiteRepository.save(any(TestSuite.class))).thenAnswer(invocation -> {
             TestSuite s = invocation.getArgument(0);
@@ -70,5 +73,35 @@ class GoldenSuiteLoaderTest {
         assertTrue(hasRefusal, "Should have loaded cases with expects_refusal = true");
         assertTrue(hasNonRefusal, "Should have loaded normal non-refusal cases");
     }
-}
 
+    @Test
+    void loadSuites_whenSuiteAlreadyExists_updatesManagedEntity() {
+        UUID suiteId = UUID.fromString("5fb896fe-9a4d-4a06-89d5-1d93dbdede73");
+        TestSuite existingSuite = new TestSuite();
+        existingSuite.setSuiteId(suiteId);
+        existingSuite.setName("rag_core_suite");
+        existingSuite.setDescription("Old description");
+
+        when(testSuiteRepository.findById(suiteId)).thenReturn(Optional.of(existingSuite));
+        when(testSuiteRepository.save(any(TestSuite.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        TestCase existingCase = new TestCase();
+        existingCase.setTestId(UUID.randomUUID());
+        existingCase.setSuite(existingSuite);
+        existingCase.setQuery("What is the default port for Redis?");
+
+        when(testCaseRepository.findBySuite_SuiteIdAndQuery(eq(suiteId), anyString()))
+                .thenReturn(Optional.of(existingCase));
+        when(testCaseRepository.save(any(TestCase.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<TestSuite> loaded = loader.loadSuites();
+
+        assertEquals(1, loaded.size());
+        TestSuite result = loaded.get(0);
+        assertEquals(suiteId, result.getSuiteId());
+        // Verify description was updated on existing entity
+        assertEquals("Core golden benchmark test suite for Sentinel-RAG CI gate evaluation", result.getDescription());
+        verify(testSuiteRepository, atLeastOnce()).save(existingSuite);
+        verify(testCaseRepository, atLeast(5)).save(existingCase);
+    }
+}

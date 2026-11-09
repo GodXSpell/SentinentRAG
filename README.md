@@ -396,6 +396,21 @@ mvn spring-boot:run
 ```
 The Java application connects to PostgreSQL on `localhost:5432` and gRPC on `localhost:50051`.
 
+#### 4. Trigger Local End-to-End Test via Webhook Simulation
+To test the complete lifecycle locally without configuring a public GitHub webhook or ngrok tunnel:
+```bash
+# Simulates a GitHub Pull Request webhook with valid HMAC-SHA256 signature
+python scripts/simulate_webhook.py --event pull_request --pr 42
+```
+This triggers the full chain:
+1. Java verifies HMAC-SHA256 signature and registers the delivery ID.
+2. Creates a `CiBuildRun` record in PostgreSQL.
+3. Queries Python over gRPC for `GetEngineInfo()`.
+4. Evaluates canary test cases against `eval_cache`.
+5. Dispatches gRPC `PrepareIndex` and `RunEvaluation` to Python.
+6. Evaluates Quality Gate thresholds (faithfulness, precision, refusal, latency).
+7. Updates build status in PostgreSQL and console logs.
+
 ---
 
 ## Configuration Reference

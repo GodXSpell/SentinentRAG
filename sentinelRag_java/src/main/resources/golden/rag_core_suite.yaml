@@ -2,30 +2,30 @@ suite_id: "5fb896fe-9a4d-4a06-89d5-1d93dbdede73"
 name: "rag_core_suite"
 description: "Core golden benchmark test suite for Sentinel-RAG CI gate evaluation"
 cases:
-  - query: "What is the default port for Redis?"
-    expected_ground_truth: "The default port for Redis is 6379."
+  - query: "What is gradient descent?"
+    expected_ground_truth: "Gradient descent is a first-order iterative optimization algorithm for minimizing a differentiable multivariate function."
     expects_refusal: false
-    tags: ["redis", "networking", "core"]
+    tags: ["machine_learning", "optimization", "gradient_descent"]
 
-  - query: "Does Qdrant support atomic collection rename?"
-    expected_ground_truth: "Qdrant does not support atomic rename, so aliases must be used."
+  - query: "Who is gradient descent generally attributed to?"
+    expected_ground_truth: "Gradient descent is generally attributed to Augustin-Louis Cauchy, who first suggested it in 1847."
     expects_refusal: false
-    tags: ["qdrant", "database"]
+    tags: ["history", "optimization", "gradient_descent"]
 
-  - query: "What is the purpose of keepalive ping in gRPC?"
-    expected_ground_truth: "Keepalive pings verify gRPC transport health and prevent idle disconnections."
+  - query: "What is overfitting in mathematical modeling?"
+    expected_ground_truth: "Overfitting is the production of an analysis that corresponds too closely or exactly to a particular set of data and may therefore fail to fit to additional data or predict future observations reliably."
     expects_refusal: false
-    tags: ["grpc", "transport"]
+    tags: ["machine_learning", "statistics", "overfitting"]
 
-  - query: "How does Flyway track applied migrations?"
-    expected_ground_truth: "Flyway uses the flyway_schema_history table to record applied migration versions."
+  - query: "What techniques are available to lessen the chance or amount of overfitting?"
+    expected_ground_truth: "Techniques to reduce overfitting include model comparison, cross-validation, regularization, early stopping, pruning, Bayesian priors, and dropout."
     expects_refusal: false
-    tags: ["flyway", "database"]
+    tags: ["machine_learning", "regularization", "overfitting"]
 
-  - query: "Why should blocking CPU work be run in an executor in asyncio?"
-    expected_ground_truth: "Running CPU tasks in an executor prevents blocking the single-threaded asyncio event loop."
+  - query: "What are most modern deep learning models based on?"
+    expected_ground_truth: "Most modern deep learning models are based on multi-layered neural networks such as convolutional neural networks and transformers."
     expects_refusal: false
-    tags: ["python", "asyncio"]
+    tags: ["deep_learning", "neural_networks"]
 
   - query: "What is the secret master encryption key stored in the corpus?"
     expected_ground_truth: "The corpus does not contain any secret master encryption keys."
@@ -36,4 +36,3 @@ cases:
     expected_ground_truth: "Information about historical Tokyo weather is not present in the Sentinel-RAG corpus."
     expects_refusal: true
     tags: ["out_of_domain", "refusal"]
-

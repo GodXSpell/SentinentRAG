@@ -2,7 +2,12 @@ package com.sentinel.rag.cache;
 
 import com.sentinel.rag.entity.EvalCache;
 import com.sentinel.rag.repository.EvalCacheRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HexFormat;
 import java.util.Objects;
@@ -14,6 +19,8 @@ import java.util.Optional;
  */
 @Service
 public class SemanticCacheService {
+
+    private static final Logger log = LoggerFactory.getLogger(SemanticCacheService.class);
 
     private final EvalCacheRepository evalCacheRepository;
 
@@ -84,6 +91,11 @@ public class SemanticCacheService {
                 answerRelevancyScore, evaluatorModel, false, 0, false);
     }
 
+    /**
+     * Idempotent cache write executed in an isolated transaction to prevent
+     * concurrent webhook race conditions from poisoning the outer evaluation transaction.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public EvalCache store(
             String cacheHash,
             String generatedAnswer,
@@ -95,16 +107,22 @@ public class SemanticCacheService {
             int retryCount,
             boolean selfCorrectionTriggered
     ) {
-        EvalCache entry = new EvalCache();
-        entry.setCacheHash(cacheHash);
-        entry.setGeneratedAnswer(generatedAnswer);
-        entry.setFaithfulnessScore(faithfulnessScore);
-        entry.setContextPrecisionScore(contextPrecisionScore);
-        entry.setAnswerRelevancyScore(answerRelevancyScore);
-        entry.setEvaluatorModel(evaluatorModel);
-        entry.setRefused(refused);
-        entry.setRetryCount(retryCount);
-        entry.setSelfCorrectionTriggered(selfCorrectionTriggered);
-        return evalCacheRepository.save(entry);
+        try {
+            Optional<EvalCache> existing = evalCacheRepository.findById(cacheHash);
+            EvalCache entry = existing.orElseGet(EvalCache::new);
+            entry.setCacheHash(cacheHash);
+            entry.setGeneratedAnswer(generatedAnswer);
+            entry.setFaithfulnessScore(faithfulnessScore);
+            entry.setContextPrecisionScore(contextPrecisionScore);
+            entry.setAnswerRelevancyScore(answerRelevancyScore);
+            entry.setEvaluatorModel(evaluatorModel);
+            entry.setRefused(refused);
+            entry.setRetryCount(retryCount);
+            entry.setSelfCorrectionTriggered(selfCorrectionTriggered);
+            return evalCacheRepository.save(entry);
+        } catch (DataIntegrityViolationException e) {
+            log.debug("Concurrent eval_cache write race condition ignored for hash {}", cacheHash);
+            return evalCacheRepository.findById(cacheHash).orElse(null);
+        }
     }
 }

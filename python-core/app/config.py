@@ -5,6 +5,8 @@ Centralized settings, loaded from environment variables (.env file).
 Every other module should import `settings` from here rather than
 reading os.environ directly.
 """
+import os
+
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -18,7 +20,7 @@ class Settings(BaseSettings):
     )
 
     # --- Qdrant ---
-    qdrant_url: str = "http://localhost:6333"
+    qdrant_url: str = os.getenv("QDRANT_URL", "http://qdrant:6333")
     qdrant_collection: str = "sentinel_chunks"
 
     # --- Embedding model ---
@@ -42,7 +44,7 @@ class Settings(BaseSettings):
     github_token: str = ""
 
     # --- Evaluation ---
-    eval_concurrency: int = 5
+    eval_concurrency: int = 1
 
 
 settings = Settings()

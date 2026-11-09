@@ -242,3 +242,55 @@ async def test_runner_error_isolation(mock_config: PipelineConfig, monkeypatch: 
     assert results[2].test_id == "good-2"
     assert results[2].error == ""
     assert results[2].faithfulness_score == 0.9
+
+
+import dataclasses
+
+@pytest.mark.anyio
+async def test_runner_prompt_template_with_context_and_query(mock_config: PipelineConfig, monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = dataclasses.replace(mock_config, prompt_template="Context:\n{context}\n\nQuestion: {query}\n\nAnswer:")
+    mock_index_manager = AsyncMock()
+    mock_index_manager.get_bm25 = MagicMock(return_value=(MagicMock(), []))
+
+    mock_f_eval = AsyncMock()
+    mock_f_eval.score_async.return_value = 0.95
+    mock_cp_eval = AsyncMock()
+    mock_cp_eval.score_async.return_value = 0.88
+    mock_ar_eval = AsyncMock()
+    mock_ar_eval.score_async.return_value = 0.91
+
+    fake_chunks = [{"text": "Deep learning uses neural networks.", "source_doc": "dl.txt", "chunk_index": 0}]
+    fake_orch = OrchestratorResult(
+        chunks=fake_chunks,
+        context_quality_score=0.95,
+        self_correction_triggered=False,
+        retry_count=0,
+        refused=False,
+    )
+    captured_prompt = {}
+
+    def mock_generate(prompt: str, context: str, config: PipelineConfig) -> str:
+        captured_prompt["prompt"] = prompt
+        return "Deep learning is neural networks."
+
+    monkeypatch.setattr("app.evaluation.runner.run_self_correction", lambda *args, **kwargs: fake_orch)
+    monkeypatch.setattr("app.evaluation.runner.generate_answer", mock_generate)
+    monkeypatch.setattr("app.evaluation.runner.check_answer", lambda *args, **kwargs: {"clean_answer": "Clean Answer"})
+
+    runner = EvaluationRunner(
+        index_manager=mock_index_manager,
+        faithfulness_evaluator=mock_f_eval,
+        context_precision_evaluator=mock_cp_eval,
+        answer_relevancy_evaluator=mock_ar_eval,
+    )
+
+    cases = [
+        TestCaseInput(test_id="c1", query="What is deep learning?", expected_ground_truth="Neural networks."),
+    ]
+
+    results = await runner.run_batch(cases, cfg)
+
+    assert len(results) == 1
+    assert results[0].error == ""
+    assert "Context:\nDeep learning uses neural networks." in captured_prompt["prompt"]
+    assert "Question: What is deep learning?" in captured_prompt["prompt"]

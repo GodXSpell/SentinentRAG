@@ -1,0 +1,122 @@
+[
+  {
+    "title": "Machine learning",
+    "filename": "machine_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Machine_learning",
+    "chars": 58096
+  },
+  {
+    "title": "Supervised learning",
+    "filename": "supervised_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Supervised_learning",
+    "chars": 26116
+  },
+  {
+    "title": "Unsupervised learning",
+    "filename": "unsupervised_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Unsupervised_learning",
+    "chars": 15778
+  },
+  {
+    "title": "Neural network",
+    "filename": "neural_network.txt",
+    "url": "https://en.wikipedia.org/wiki/Neural_network",
+    "chars": 5331
+  },
+  {
+    "title": "Deep learning",
+    "filename": "deep_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Deep_learning",
+    "chars": 56177
+  },
+  {
+    "title": "Convolutional neural network",
+    "filename": "convolutional_neural_network.txt",
+    "url": "https://en.wikipedia.org/wiki/Convolutional_neural_network",
+    "chars": 66228
+  },
+  {
+    "title": "Recurrent neural network",
+    "filename": "recurrent_neural_network.txt",
+    "url": "https://en.wikipedia.org/wiki/Recurrent_neural_network",
+    "chars": 54902
+  },
+  {
+    "title": "Transformer (deep learning)",
+    "filename": "transformer_deep_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Transformer_(deep_learning)",
+    "chars": 122367
+  },
+  {
+    "title": "Natural language processing",
+    "filename": "natural_language_processing.txt",
+    "url": "https://en.wikipedia.org/wiki/Natural_language_processing",
+    "chars": 32382
+  },
+  {
+    "title": "Reinforcement learning",
+    "filename": "reinforcement_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Reinforcement_learning",
+    "chars": 52531
+  },
+  {
+    "title": "Overfitting",
+    "filename": "overfitting.txt",
+    "url": "https://en.wikipedia.org/wiki/Overfitting",
+    "chars": 15838
+  },
+  {
+    "title": "Gradient descent",
+    "filename": "gradient_descent.txt",
+    "url": "https://en.wikipedia.org/wiki/Gradient_descent",
+    "chars": 70007
+  },
+  {
+    "title": "Support vector machine",
+    "filename": "support_vector_machine.txt",
+    "url": "https://en.wikipedia.org/wiki/Support_vector_machine",
+    "chars": 100395
+  },
+  {
+    "title": "Random forest",
+    "filename": "random_forest.txt",
+    "url": "https://en.wikipedia.org/wiki/Random_forest",
+    "chars": 64056
+  },
+  {
+    "title": "Decision tree learning",
+    "filename": "decision_tree_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Decision_tree_learning",
+    "chars": 51216
+  },
+  {
+    "title": "Feature engineering",
+    "filename": "feature_engineering.txt",
+    "url": "https://en.wikipedia.org/wiki/Feature_engineering",
+    "chars": 8443
+  },
+  {
+    "title": "Cross-validation (statistics)",
+    "filename": "cross-validation_statistics.txt",
+    "url": "https://en.wikipedia.org/wiki/Cross-validation_(statistics)",
+    "chars": 37415
+  },
+  {
+    "title": "Bias\u2013variance tradeoff",
+    "filename": "biasvariance_tradeoff.txt",
+    "url": "https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff",
+    "chars": 71133
+  },
+  {
+    "title": "Word embedding",
+    "filename": "word_embedding.txt",
+    "url": "https://en.wikipedia.org/wiki/Word_embedding",
+    "chars": 10018
+  },
+  {
+    "title": "Attention (machine learning)",
+    "filename": "attention_machine_learning.txt",
+    "url": "https://en.wikipedia.org/wiki/Attention_(machine_learning)",
+    "chars": 25669
+  }
+]
