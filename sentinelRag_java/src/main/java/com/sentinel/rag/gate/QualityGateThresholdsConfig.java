@@ -21,7 +21,7 @@ public record QualityGateThresholdsConfig(
         if (faithfulnessFloor == null) faithfulnessFloor = 0.85;
         if (contextPrecisionFloor == null) contextPrecisionFloor = 0.80;
         if (refusalAccuracyFloor == null) refusalAccuracyFloor = 1.0;
-        if (latencyP95BudgetMs == null) latencyP95BudgetMs = 800L;
+        if (latencyP95BudgetMs == null) latencyP95BudgetMs = 90000L;
         if (faithfulnessCheckEnabled == null) faithfulnessCheckEnabled = true;
         if (contextPrecisionCheckEnabled == null) contextPrecisionCheckEnabled = true;
         if (refusalAccuracyCheckEnabled == null) refusalAccuracyCheckEnabled = true;

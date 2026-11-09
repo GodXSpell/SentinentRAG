@@ -178,10 +178,18 @@ class EvaluationRunner:
                 context_text = "\n\n".join(chunk["text"] for chunk in orch_result.chunks)
                 chunk_texts = [chunk["text"] for chunk in orch_result.chunks]
 
-                if "{query}" in config.prompt_template:
-                    prompt = config.prompt_template.format(query=case.query)
+                template = config.prompt_template
+                if "{query}" in template or "{context}" in template or "{question}" in template:
+                    try:
+                        prompt = template.format(
+                            query=case.query,
+                            question=case.query,
+                            context=context_text,
+                        )
+                    except KeyError:
+                        prompt = f"{template}\n\nQuestion: {case.query}\n\nContext:\n{context_text}"
                 else:
-                    prompt = f"{config.prompt_template}\n\nQuestion: {case.query}"
+                    prompt = f"{template}\n\nQuestion: {case.query}\n\nContext:\n{context_text}"
 
                 raw_answer = await loop.run_in_executor(
                     self._executor,

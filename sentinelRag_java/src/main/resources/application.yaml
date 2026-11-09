@@ -20,12 +20,24 @@ grpc:
   client:
     channel:
       default:
-        target: static://localhost:50051
+        target: static://localhost:9090
 
 sentinel:
+  grpc:
+    index-timeout-seconds: 600
+    evaluation-deadline-seconds: 300
   github:
     webhook-secret: ${GITHUB_WEBHOOK_SECRET}
     token: ${GITHUB_TOKEN:}
     default-repo: ${GITHUB_REPOSITORY:GodXSpell/SentinentRAG}
   eval:
     default-suite-id: 5fb896fe-9a4d-4a06-89d5-1d93dbdede73
+  gate:
+    faithfulness-floor: 0.85
+    context-precision-floor: 0.80
+    refusal-accuracy-floor: 1.0
+    latency-p95-budget-ms: 120000
+    faithfulness-check-enabled: true
+    context-precision-check-enabled: true
+    refusal-accuracy-check-enabled: true
+    latency-check-enabled: true

@@ -10,20 +10,20 @@ markitdown[all]
 requests
 
 # --- Embeddings & vector search ---
-sentence-transformers
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch
+sentence-transformers
 qdrant-client
 rank-bm25
 
-# --- Reranking (Week 1 Day 3) ---
+# --- Reranking ---
 onnxruntime
 transformers
 
-# --- Hallucination guard (Week 1 Day 5) ---
+# --- Hallucination guard ---
 spacy
-# after install, run once: python -m spacy download en_core_web_sm
 
-# --- gRPC (Week 2) ---
+# --- gRPC ---
 grpcio
 grpcio-tools
 protobuf

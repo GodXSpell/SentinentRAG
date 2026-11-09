@@ -1,6 +1,4 @@
 # Multi-stage Dockerfile for Sentinel-RAG Python Evaluation Plane
-# Pre-caches all models and spacy tokenizer to ensure instant startup with zero external network dependencies.
-
 FROM python:3.12-slim AS builder
 
 WORKDIR /build
@@ -44,7 +42,6 @@ EXPOSE 8000
 EXPOSE 50051
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+    CMD python -c "import socket; s = socket.socket(); s.connect(('localhost', 50051)); s.close()" || exit 1
 
 CMD ["python", "-m", "grpc_server.server"]
-
